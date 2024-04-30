@@ -1,8 +1,22 @@
-import { mutation, query } from './_generated/server';
+import { MutationCtx, QueryCtx, mutation, query } from './_generated/server';
 import { ConvexError, v } from 'convex/values';
+import { getUser } from './users';
 
 /**
- * @description ファイルを新規作成
+ * @description ユーザーが組織に属しているかどうか判定
+ */
+export const hasAccessToOrg = async (
+  ctx: QueryCtx | MutationCtx,
+  tokenIdentifier: string,
+  orgId: string
+) => {
+  // 違うユーザーであれば、エラー
+  const user = await getUser(ctx, tokenIdentifier);
+  return user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+};
+
+/**
+ * @description ファイルを新規作成する
  */
 export const createFile = mutation({
   args: {
@@ -16,6 +30,16 @@ export const createFile = mutation({
       throw new ConvexError('you must be logged in to upload a file');
     }
 
+    // ユーザーが指定した組織に属していなければ、エラー
+    const hasAccess = await hasAccessToOrg(
+      ctx,
+      identity.tokenIdentifier,
+      args.orgId
+    );
+    if (!hasAccess) {
+      throw new ConvexError('you do not have access to this org');
+    }
+
     await ctx.db.insert('files', {
       name: args.name,
       orgId: args.orgId,
@@ -23,7 +47,7 @@ export const createFile = mutation({
   },
 });
 /**
- * @description ファイル一覧を取得
+ * @description ファイル一覧を取得する
  */
 export const getFiles = query({
   args: {
@@ -32,8 +56,17 @@ export const getFiles = query({
   async handler(ctx, args) {
     // ログインしていなければ、空で返す
     const identity = await ctx.auth.getUserIdentity();
-    console.log('======[getFiles]identity=======', identity);
     if (!identity) {
+      return [];
+    }
+
+    // ユーザーが指定した組織に属していなければ、エラー、空で返す
+    const hasAccess = await hasAccessToOrg(
+      ctx,
+      identity.tokenIdentifier,
+      args.orgId
+    );
+    if (!hasAccess) {
       return [];
     }
 
