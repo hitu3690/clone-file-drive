@@ -20,7 +20,7 @@ export default function Home() {
   const orgId: string | undefined =
     organization.isLoaded && user.isLoaded
       ? organization.organization?.id ?? user.user?.id
-      : '';
+      : undefined;
 
   const files = useQuery(api.files.getFiles, orgId ? { orgId } : 'skip');
   const createFile = useMutation(api.files.createFile);

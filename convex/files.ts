@@ -30,19 +30,19 @@ export const getFiles = query({
     orgId: v.string(),
   },
   async handler(ctx, args) {
-    console.log('======args=======', args);
-
     // ログインしていなければ、空で返す
     const identity = await ctx.auth.getUserIdentity();
+    console.log('======[getFiles]identity=======', identity);
     if (!identity) {
       return [];
     }
 
-    return (
-      ctx.db
-        .query('files')
-        // .withIndex('by_orgId', ({ eq }) => eq('orgId', args.orgId))
-        .collect()
-    );
+    const output = await ctx.db
+      .query('files')
+      .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
+      .collect();
+    console.log('======[getFiles]output=======', output);
+
+    return output;
   },
 });
