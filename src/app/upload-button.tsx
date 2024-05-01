@@ -28,10 +28,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Doc } from '../../convex/_generated/dataModel';
-import { fileTypes } from '../../convex/schema';
 
 const formSchema = z.object({
-  title: z.string().min(1).max(200),
+  title: z.string().min(0).max(200),
   file: z
     .custom<FileList>((val) => val instanceof FileList, 'Required')
     .refine((files) => files.length > 0, `Required`),

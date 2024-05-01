@@ -70,6 +70,7 @@ export const createFile = mutation({
 export const getFiles = query({
   args: {
     orgId: v.string(),
+    query: v.optional(v.string()),
   },
   async handler(ctx, args) {
     // ログインしていなければ、空で返す
@@ -101,7 +102,15 @@ export const getFiles = query({
     );
     console.log('======[getFiles]files=======', files);
 
-    return filesWithUrl;
+    // 検索
+    const query = args.query;
+    if (query) {
+      return filesWithUrl.filter(({ name }) =>
+        name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+      );
+    } else {
+      return filesWithUrl;
+    }
   },
 });
 /**
