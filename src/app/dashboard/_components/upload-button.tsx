@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { api } from '../../../../convex/_generated/api';
 import { useState } from 'react';
 import {
   Dialog,
@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
-import { Doc } from '../../convex/_generated/dataModel';
+import { Doc } from '../../../../convex/_generated/dataModel';
 
 const formSchema = z.object({
   title: z.string().min(0).max(200),
