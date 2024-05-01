@@ -1,6 +1,8 @@
 import { MutationCtx, QueryCtx, mutation, query } from './_generated/server';
 import { ConvexError, v } from 'convex/values';
+import { Doc, Id } from './_generated/dataModel';
 import { getUser } from './users';
+import { fileTypes } from './schema';
 
 /**
  * @description
@@ -34,6 +36,7 @@ export const createFile = mutation({
   args: {
     name: v.string(),
     fileId: v.id('_storage'),
+    type: fileTypes,
     orgId: v.string(),
   },
   async handler(ctx, args) {
@@ -56,6 +59,7 @@ export const createFile = mutation({
     await ctx.db.insert('files', {
       name: args.name,
       fileId: args.fileId,
+      type: args.type,
       orgId: args.orgId,
     });
   },
@@ -84,13 +88,20 @@ export const getFiles = query({
       return [];
     }
 
-    const output = await ctx.db
+    const files = await ctx.db
       .query('files')
       .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect();
-    console.log('======[getFiles]output=======', output);
 
-    return output;
+    const filesWithUrl = await Promise.all(
+      files.map(async (file) => ({
+        ...file,
+        url: await ctx.storage.getUrl(file.fileId),
+      }))
+    );
+    console.log('======[getFiles]files=======', files);
+
+    return filesWithUrl;
   },
 });
 /**
