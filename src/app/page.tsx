@@ -32,6 +32,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -41,6 +43,7 @@ const formSchema = z.object({
 });
 
 export default function Home() {
+  const { toast } = useToast();
   const organization = useOrganization();
   const user = useUser();
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
@@ -72,14 +75,27 @@ export default function Home() {
     });
     const { storageId } = await result.json();
 
-    await createFile({
-      name: values.title,
-      fileId: storageId,
-      orgId,
-    });
+    try {
+      await createFile({
+        name: values.title,
+        fileId: storageId,
+        orgId,
+      });
 
-    form.reset();
-    setIsFileDialogOpen(false);
+      form.reset();
+      setIsFileDialogOpen(false);
+      toast({
+        variant: 'success',
+        title: 'File Upload',
+        description: 'Now everyone can view your file',
+      });
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Something went wrong',
+        description: 'Your file cloud not be uploaded, try again later',
+      });
+    }
   };
 
   // ダイアログの表示フラグ
@@ -93,7 +109,13 @@ export default function Home() {
       <div className="flex justify-between item-center"></div>
       <h1 className="text-4xl font-bold">Your Files</h1>
 
-      <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
+      <Dialog
+        open={isFileDialogOpen}
+        onOpenChange={(isOpen) => {
+          setIsFileDialogOpen(isOpen);
+          form.reset();
+        }}
+      >
         <DialogTrigger asChild>
           <Button>Upload File</Button>
         </DialogTrigger>
@@ -134,23 +156,22 @@ export default function Home() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit">Submit</Button>
+                  <Button
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                    className="flex gap-1"
+                  >
+                    {form.formState.isSubmitting && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    Submit
+                  </Button>
                 </form>
               </Form>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
-      <SignedIn>
-        <SignOutButton>
-          <Button>Sign out</Button>
-        </SignOutButton>
-      </SignedIn>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <Button>Sign in</Button>
-        </SignInButton>
-      </SignedOut>
 
       {files?.map(({ _id, name }) => <div key={_id}>{name}</div>)}
     </main>
