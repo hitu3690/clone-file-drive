@@ -14,7 +14,6 @@ export const getUser = async (
       q.eq('tokenIdentifier', tokenIdentifier)
     )
     .first();
-  console.log('======[getUser]output=======', output);
 
   // ユーザーが存在していなければ、エラー
   if (!output) {
