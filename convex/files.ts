@@ -25,7 +25,14 @@ export const hasAccessToOrg = async (
 ) => {
   // 違うユーザーであれば、エラー
   const user = await getUser(ctx, tokenIdentifier);
-  return user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+  const hasAccess =
+    user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+
+  if (!hasAccess) {
+    return null;
+  }
+
+  return user;
 };
 
 /**
@@ -46,16 +53,14 @@ export const createFile = mutation({
     }
 
     // ユーザーが指定した組織に属していなければ、エラー
-    const hasAccess = await hasAccessToOrg(
+    const user = await hasAccessToOrg(
       ctx,
       identity.tokenIdentifier,
       args.orgId
     );
-    if (!hasAccess) {
+    if (!user) {
       throw new ConvexError('you do not have access to this org');
     }
-
-    const user = await getUser(ctx, args.orgId);
 
     await ctx.db.insert('files', {
       name: args.name,
