@@ -79,6 +79,7 @@ export const getFiles = query({
     orgId: v.string(),
     query: v.optional(v.string()),
     isFavorite: v.optional(v.boolean()),
+    type: v.optional(v.string()),
   },
   async handler(ctx, args) {
     // ログインしていなければ、空で返す
@@ -139,6 +140,11 @@ export const getFiles = query({
       filesWithUrl = filesWithUrl.filter((file) =>
         favorites.some((favorite) => favorite.fileId === file._id)
       );
+    }
+
+    // ファイルタイプでフィルター
+    if (args.type !== 'all') {
+      filesWithUrl = filesWithUrl.filter((file) => file.type === args.type);
     }
 
     return filesWithUrl;
