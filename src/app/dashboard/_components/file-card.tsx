@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Doc } from '../../../../convex/_generated/dataModel';
-import { Button } from '@/components/ui/button';
+import { formatRelative } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  FileIcon,
   FileTextIcon,
   GanttChartIcon,
   ImageIcon,
@@ -33,10 +34,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ReactNode, useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { useToast } from '@/components/ui/use-toast';
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const FileCardActions = ({
   file,
@@ -91,7 +93,25 @@ const FileCardActions = ({
             }}
             className="flex gap-1 items-center cursor-pointer"
           >
+            {/* {file.isFavorite ? (
+              <div className="flex gap-1 items-center">
+                <StarIcon className="w-4 h-4" /> Unfavorite
+              </div>
+            ) : (
+              <div className="flex gap-1 items-center">
+              </div>
+            )} */}
             <StarIcon className="w-4 h-4" /> Favorite
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              if (!file.url) return;
+              window.open(file.url, '_blank');
+            }}
+            className="flex gap-1 items-center cursor-pointer"
+          >
+            <FileIcon className="w-4 h-4" /> Download
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -117,6 +137,10 @@ export const FileCard = ({
     csv: <GanttChartIcon />,
   } as Record<Doc<'files'>['type'], ReactNode>;
 
+  const getUserProfile = useQuery(api.users.getUserProfile, {
+    userId: file.userId,
+  });
+
   return (
     <Card>
       <CardHeader className="relative">
@@ -136,15 +160,17 @@ export const FileCard = ({
         {file.type === 'csv' && <GanttChartIcon className="w-20 h-20" />}
         {file.type === 'pdf' && <FileTextIcon className="w-20 h-20" />}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Button
-          onClick={() => {
-            if (!file.url) return;
-            window.open(file.url, '_blank');
-          }}
-        >
-          Download
-        </Button>
+      <CardFooter className="flex justify-between">
+        <div className="flex gap-2 text-xs text-gray-700 w-40 items-center">
+          <Avatar className="w-6 h-6">
+            <AvatarImage src={getUserProfile?.image} />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          {getUserProfile?.name}
+        </div>
+        <div className="text-xs text-gray-700">
+          Uploaded on {formatRelative(new Date(file._creationTime), new Date())}
+        </div>
       </CardFooter>
     </Card>
   );

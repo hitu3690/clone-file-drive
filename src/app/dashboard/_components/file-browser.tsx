@@ -46,6 +46,7 @@ export const FileBrowser = ({
     api.files.getFiles,
     orgId ? { orgId, query, isFavorite } : 'skip'
   );
+
   const isLoading = files === undefined;
 
   return (
