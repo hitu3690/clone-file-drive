@@ -27,16 +27,21 @@ http.route({
       switch (result.type) {
         case 'user.created':
           await ctx.runMutation(internal.users.createUser, {
-            tokenIdentifier: `https://oriented-coral-43.clerk.accounts.dev|${result.data.id}`,
-            // clerkId: result.data.id,
-            // email: result.data.email_addresses[0]?.email_address,
-            // name: `${result.data.first_name} ${result.data.last_name} `,
-            // profileImage: result.data.image_url,
+            tokenIdentifier: `https://${process.env.CLERK_HOSTNAME}|${result.data.id}`,
+            name: `${result.data.first_name} ${result.data.last_name}`,
+            image: result.data.image_url,
+          });
+          break;
+        case 'user.updated':
+          await ctx.runMutation(internal.users.updateUser, {
+            tokenIdentifier: `https://${process.env.CLERK_HOSTNAME}|${result.data.id}`,
+            name: `${result.data.first_name} ${result.data.last_name}`,
+            image: result.data.image_url,
           });
           break;
         case 'organizationMembership.created':
           await ctx.runMutation(internal.users.addOrgIdToUser, {
-            tokenIdentifier: `https://oriented-coral-43.clerk.accounts.dev|${result.data.public_user_data.user_id}`,
+            tokenIdentifier: `https://${process.env.CLERK_HOSTNAME}|${result.data.public_user_data.user_id}`,
             orgId: result.data.organization.id,
           });
           break;
