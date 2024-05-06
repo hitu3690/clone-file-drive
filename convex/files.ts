@@ -77,9 +77,9 @@ export const createFile = mutation({
 export const getFiles = query({
   args: {
     orgId: v.string(),
+    type: v.string(),
     query: v.optional(v.string()),
     isFavorite: v.optional(v.boolean()),
-    type: v.optional(v.string()),
   },
   async handler(ctx, args) {
     // ログインしていなければ、空で返す
@@ -108,7 +108,6 @@ export const getFiles = query({
         url: await ctx.storage.getUrl(file.fileId),
       }))
     );
-    console.log('======[getFiles]filesWithUrl=======', filesWithUrl);
 
     // ワード検索でフィルター
     const query = args.query;

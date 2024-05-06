@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFiles } from '@/app/dashboard/_hooks';
+import { Preloaded, usePreloadedQuery } from 'convex/react';
+import { api } from '@convex/_generated/api';
 
 const Placeholder = () => {
   return (
@@ -35,11 +37,15 @@ const Placeholder = () => {
 export const FileBrowser = ({
   title,
   isFavorite,
+  preloadFiles,
 }: {
   title: string;
   isFavorite?: boolean;
+  preloadFiles: Preloaded<typeof api.files.getFiles>;
 }) => {
-  const { files, setQuery, type, setType, query } = useFiles(isFavorite);
+  const { setQuery, type, setType, query } = useFiles(isFavorite);
+  const files = usePreloadedQuery(preloadFiles);
+
   const isLoading = files === undefined;
 
   return (
