@@ -1,14 +1,10 @@
 'use client';
 
-import { useOrganization, useUser } from '@clerk/nextjs';
-import { useQuery } from 'convex/react';
-import { api } from '@convex/_generated/api';
 import { UploadButton } from '@/app/dashboard/_components/upload-button';
 import { FileCard } from '@/app/dashboard/_components/file-card';
 import Image from 'next/image';
 import { GridIcon, Loader2, RowsIcon } from 'lucide-react';
 import { SearchBar } from '@/app/dashboard/_components/search-bar';
-import { useState } from 'react';
 import { DataTable } from '@/app/dashboard/_components/file-table';
 import { columns } from './columns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFiles } from '@/app/dashboard/_hooks';
 
 const Placeholder = () => {
   return (
@@ -42,22 +39,7 @@ export const FileBrowser = ({
   title: string;
   isFavorite?: boolean;
 }) => {
-  const organization = useOrganization();
-  const user = useUser();
-  const [query, setQuery] = useState('');
-  const [type, setType] = useState('all');
-
-  // organization > userの優先度で、IDを取得
-  const orgId: string | undefined =
-    organization.isLoaded && user.isLoaded
-      ? organization.organization?.id ?? user.user?.id
-      : undefined;
-
-  const files = useQuery(
-    api.files.getFiles,
-    orgId ? { orgId, type, query, isFavorite } : 'skip'
-  );
-
+  const { files, setQuery, type, setType, query } = useFiles(isFavorite);
   const isLoading = files === undefined;
 
   return (
@@ -106,7 +88,9 @@ export const FileBrowser = ({
           <>
             <TabsContent value="grid">
               <div className="grid grid-cols-3 gap-4">
-                {files?.map((file) => <FileCard key={file._id} file={file} />)}
+                {files.map((file) => (
+                  <FileCard key={file._id} file={file} />
+                ))}
               </div>
             </TabsContent>
             <TabsContent value="table">
