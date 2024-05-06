@@ -77,8 +77,6 @@ export const createFile = mutation({
 export const getFiles = query({
   args: {
     orgId: v.string(),
-    type: v.string(),
-    query: v.optional(v.string()),
     isFavorite: v.optional(v.boolean()),
   },
   async handler(ctx, args) {
@@ -109,14 +107,6 @@ export const getFiles = query({
       }))
     );
 
-    // ワード検索でフィルター
-    const query = args.query;
-    if (query) {
-      filesWithUrl = filesWithUrl.filter(({ name }) =>
-        name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-      );
-    }
-
     // お気に入りでフィルター
     if (args.isFavorite) {
       //　ユーザーが存在しなければ、エラー
@@ -139,11 +129,6 @@ export const getFiles = query({
       filesWithUrl = filesWithUrl.filter((file) =>
         favorites.some((favorite) => favorite.fileId === file._id)
       );
-    }
-
-    // ファイルタイプでフィルター
-    if (args.type !== 'all') {
-      filesWithUrl = filesWithUrl.filter((file) => file.type === args.type);
     }
 
     return filesWithUrl;

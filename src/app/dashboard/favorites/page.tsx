@@ -9,7 +9,6 @@ export default async function FavoritesPage() {
 
   const files = await preloadQuery(api.files.getFiles, {
     orgId: orgId ?? '',
-    type: 'all',
     isFavorite: true,
   });
 

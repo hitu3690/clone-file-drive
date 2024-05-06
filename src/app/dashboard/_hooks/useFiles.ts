@@ -1,27 +1,42 @@
-import { useQuery } from 'convex/react';
+import { Preloaded, usePreloadedQuery, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export const useFiles = (isFavorite?: boolean) => {
+export const useFiles = (
+  preloadFiles: Preloaded<typeof api.files.getFiles>
+) => {
+  // TODO:
+  const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
+  const rawFiles = usePreloadedQuery(preloadFiles);
+  const [files, setFiles] = useState(rawFiles); // 初回時にはrawFilesはデータが渡ってきていないが、型を固定するため代入
 
-  // organization > userの優先度で、IDを取得
-  // const orgId: string | undefined =
-  //   organization.isLoaded && user.isLoaded
-  //     ? organization.organization?.id ?? user.user?.id
-  //     : undefined;
+  useEffect(() => {
+    let filteredFiles = rawFiles;
 
-  // const files = useQuery(
-  //   api.files.getFiles,
-  //   orgId ? { orgId, type, query, isFavorite } : 'skip'
-  // );
+    // ワード検索でフィルター
+    if (query) {
+      filteredFiles = rawFiles.filter(({ name }) =>
+        name.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+      );
+    }
+
+    // ファイルタイプでフィルター
+    if (type !== 'all') {
+      filteredFiles = rawFiles.filter((file) => file.type === type);
+    }
+
+    // 初回データ取得とフィルタリングでの取得どちらにも対応
+    setFiles(filteredFiles);
+  }, [query, rawFiles, type]);
 
   return {
-    // files,
+    files,
     query,
     setQuery,
     type,
     setType,
+    isLoading,
   };
 };

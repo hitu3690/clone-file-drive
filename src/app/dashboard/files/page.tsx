@@ -9,7 +9,6 @@ export default async function FilesPage() {
 
   const files = await preloadQuery(api.files.getFiles, {
     orgId: orgId ?? '',
-    type: 'all',
   });
 
   return (

@@ -36,17 +36,13 @@ const Placeholder = () => {
 
 export const FileBrowser = ({
   title,
-  isFavorite,
   preloadFiles,
 }: {
   title: string;
-  isFavorite?: boolean;
   preloadFiles: Preloaded<typeof api.files.getFiles>;
 }) => {
-  const { setQuery, type, setType, query } = useFiles(isFavorite);
-  const files = usePreloadedQuery(preloadFiles);
-
-  const isLoading = files === undefined;
+  const { setQuery, type, setType, query, files, isLoading } =
+    useFiles(preloadFiles);
 
   return (
     <>
